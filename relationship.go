@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -33,4 +36,10 @@ func NewRelationship(sourcePeople People, targetPeople People, strength Relation
 
 func (r Relationship) String() string {
 	return fmt.Sprintf("%s -> %s (%s)", r.sourcePeopleID, r.targetPeopleID, r.relationshipStrength)
+}
+
+func (r Relationship) Encrypt(rsaPublicKey *rsa.PublicKey) ([]byte, error) {
+	rng := rand.Reader
+	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rng, rsaPublicKey, []byte(r.String()), nil)
+	return ciphertext, err
 }

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -35,4 +38,10 @@ func NewPeople(name, role, team string, level Level, influence Influence, notes 
 
 func (p People) String() string {
 	return fmt.Sprintf("%s (%s) %s %s, %s", p.name, p.level, p.role, p.currentTeam, p.influence)
+}
+
+func (p People) Encrypt(rsaPublicKey *rsa.PublicKey) ([]byte, error) {
+	rng := rand.Reader
+	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rng, rsaPublicKey, []byte(p.String()), nil)
+	return ciphertext, err
 }

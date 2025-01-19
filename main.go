@@ -1,9 +1,7 @@
 package main
 
 import (
-	"html/template"
-	"log"
-	"net/http"
+	"fmt"
 )
 
 func loadOrganisation() *Organisation {
@@ -14,28 +12,14 @@ func loadOrganisation() *Organisation {
 	people1, _ := org.FindByName("John Doe")
 	people2, _ := org.FindByName("Jane Doe")
 	org.AddRelationship(NewRelationship(people1, people2, StrongRelationshipStrength, Manager, LowDependencyLevel, "A very strong relationship"))
-	org.AddInteraction(NewInteraction(people1, InteractionTypeMeeting, InteractionSentimentPositive, InteractionImpactPositive, "A very strong relationship"))
+
 	return org
 }
 
 func main() {
 	org := loadOrganisation()
+	people1, _ := org.FindByName("John Doe")
 
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles(
-			"templates/layout.html",
-			"templates/graph.html",
-		))
-
-		data := getGraphData(org)
-		err := tmpl.ExecuteTemplate(w, "layout", data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-	log.Println("Server starting on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	rsaPubKey, err := loadRSAPublicKey("test-pk-rs256.rsa.pub")
+	fmt.Print(people1.Encrypt(rsaPubKey))
 }
